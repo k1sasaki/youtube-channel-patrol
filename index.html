@@ -1,0 +1,1112 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#f7f7f8" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#141416" media="(prefers-color-scheme: dark)">
+<title>ようつべパトロール</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="favicon.ico?v=2" sizes="any">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<style>
+  :root {
+    color-scheme: light dark;
+    --bg: #f7f7f8;
+    --card: #ffffff;
+    --text: #101012;
+    --muted: #47474d;
+    --border: #d4d4d8;
+    --accent: #b81a1a;
+    --accent-bg: #fdecec;
+    --ok: #146c2e;
+    --ok-bg: #e6f6ea;
+    --neutral-bg: #eceef0;
+    --brand-red: #ed1c24;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #141416;
+      --card: #1f1f22;
+      --text: #f7f7f8;
+      --muted: #c6c6cc;
+      --border: #3d3d43;
+      --accent: #ff6b6b;
+      --accent-bg: #3a1f1f;
+      --ok: #5fe08a;
+      --ok-bg: #163826;
+      --neutral-bg: #2a2a2e;
+      --brand-red: #ed1c24;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: "Meiryo", "MS UI Gothic", "Segoe UI", -apple-system, BlinkMacSystemFont, "Hiragino Kaku Gothic ProN", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+  }
+  header {
+    padding: 20px 16px 8px;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+  header h1 { font-size: 1.4rem; margin: 0 0 4px; }
+  header p.sub { color: var(--muted); margin: 0; font-size: 0.9rem; }
+  main {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 8px 16px 60px;
+  }
+  section.card, details.card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 18px;
+    margin-bottom: 16px;
+  }
+  section.card > h2 {
+    font-size: 1rem;
+    margin: 0 0 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  details.card > summary.cardhead {
+    font-size: 1rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    list-style: none;
+  }
+  details.card > summary.cardhead::-webkit-details-marker { display: none; }
+  details.card > summary.cardhead::before {
+    content: "▸";
+    display: inline-block;
+    color: var(--muted);
+    transition: transform 0.15s;
+    font-size: 1.15rem;
+  }
+  details.card[open] > summary.cardhead::before { transform: rotate(90deg); }
+  details.card > summary.cardhead .status {
+    font-weight: normal;
+    color: var(--muted);
+    font-size: 0.82rem;
+    margin-left: 2px;
+  }
+  details.card > summary.cardhead .status.ok { color: var(--ok); }
+  details.card > .cardbody { margin-top: 14px; }
+  .badge, details.card > summary.cardhead .badge {
+    font-size: 0.75rem;
+    background: var(--neutral-bg);
+    color: var(--text);
+    border-radius: 999px;
+    padding: 2px 8px;
+    font-weight: normal;
+  }
+  label { font-size: 0.85rem; color: var(--muted); display: block; margin-bottom: 4px; }
+  input[type=text], input[type=password] {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 0.95rem;
+  }
+  .row { display: flex; gap: 8px; align-items: flex-end; flex-wrap: wrap; margin-bottom: 10px; }
+  .row > div.grow { flex: 1; min-width: 200px; }
+  button {
+    border: none;
+    border-radius: 8px;
+    padding: 9px 16px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    background: var(--brand-red);
+    color: white;
+    white-space: nowrap;
+  }
+  button.secondary {
+    background: var(--bg);
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+  button:disabled { opacity: 0.5; cursor: not-allowed; }
+  button.tiny { padding: 3px 9px; font-size: 0.75rem; }
+  .dropzone {
+    border: 2px dashed var(--border);
+    border-radius: 10px;
+    padding: 22px;
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.9rem;
+    cursor: pointer;
+    margin-bottom: 10px;
+  }
+  .dropzone.drag { border-color: var(--accent); color: var(--accent); background: var(--accent-bg); }
+  .hint { font-size: 0.78rem; color: var(--muted); margin: 4px 0 0; }
+  .hint a { color: var(--accent); text-decoration: underline; }
+  table.chlist { width: 100%; border-collapse: collapse; font-size: 0.88rem; margin-top: 8px; }
+  table.chlist th, table.chlist td { text-align: left; padding: 6px 4px; border-bottom: 1px solid var(--border); }
+  table.chlist th { color: var(--muted); font-weight: normal; font-size: 0.78rem; }
+  table.chlist td.num { text-align: right; }
+  table.chlist td a { color: var(--text); text-decoration: none; }
+  table.chlist td a:hover { text-decoration: underline; }
+  .chlist-row { display: flex; gap: 8px; align-items: center; }
+  .chlist-thumb { width: 80px; height: 45px; object-fit: cover; border-radius: 4px; flex-shrink: 0; background: var(--border); }
+  .chlist-latest a { color: var(--muted); }
+  .empty-note { color: var(--muted); font-size: 0.85rem; }
+  #patrolBtn { font-size: 1rem; padding: 12px 24px; }
+  #progressBox { margin-top: 10px; font-size: 0.85rem; color: var(--muted); }
+  #progressBar { height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; margin-top: 6px; }
+  #progressBar > div { height: 100%; background: var(--ok); width: 0%; transition: width 0.2s; }
+  .msg { font-size: 0.85rem; border-radius: 8px; padding: 8px 10px; margin-top: 8px; }
+  .msg.error { background: var(--accent-bg); color: var(--accent); }
+  .msg.ok { background: var(--ok-bg); color: var(--ok); }
+  .chgroup { border: 1px solid var(--border); border-radius: 10px; margin-bottom: 12px; overflow: hidden; }
+  .chgroup summary {
+    cursor: pointer;
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+    list-style: none;
+  }
+  .chgroup summary::-webkit-details-marker { display: none; }
+  .chgroup summary::before {
+    content: "▸";
+    display: inline-block;
+    color: var(--muted);
+    transition: transform 0.15s;
+    font-size: 1.15rem;
+  }
+  .chgroup[open] summary::before { transform: rotate(90deg); }
+  .chgroup summary .cnt {
+    background: var(--ok-bg);
+    color: var(--ok);
+    border-radius: 999px;
+    font-size: 0.75rem;
+    padding: 1px 9px;
+    font-weight: normal;
+  }
+  .chgroup summary .cnt.zero { background: var(--border); color: var(--muted); }
+  .chgroup summary .chactions { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+  .chgroup summary .chactions a { color: var(--muted); text-decoration: none; font-weight: normal; font-size: 0.78rem; }
+  .chgroup summary .chactions .rmbtn { font-weight: normal; }
+  .bookmarklet-link {
+    display: inline-block;
+    background: var(--bg);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 9px 16px;
+    font-size: 0.9rem;
+    text-decoration: none;
+    cursor: grab;
+  }
+  .candidate-box { margin-top: 10px; }
+  .candidate-box .row { margin-top: 8px; margin-bottom: 0; }
+  .videolist { padding: 4px 14px 12px; }
+  .video {
+    display: flex;
+    gap: 10px;
+    padding: 8px 0;
+    border-top: 1px solid var(--border);
+  }
+  .video:first-child { border-top: none; }
+  .video img { width: 120px; height: 68px; object-fit: cover; border-radius: 6px; flex-shrink: 0; background: var(--border); }
+  .video .vt { font-size: 0.88rem; }
+  .video .vt a { color: var(--text); text-decoration: none; }
+  .video .vt a:hover { text-decoration: underline; }
+  .video .vd { color: var(--muted); font-size: 0.78rem; margin-top: 2px; }
+  #resultsEmpty { color: var(--muted); font-size: 0.9rem; }
+  .rmbtn { background: none; color: var(--muted); border: none; cursor: pointer; font-size: 0.8rem; padding: 2px 6px; }
+  .rmbtn:hover { color: var(--accent); }
+  footer { max-width: 900px; margin: 0 auto; padding: 20px 16px 40px; border-top: 1px solid var(--border); }
+  footer .colophon { display: flex; justify-content: space-between; gap: 12px; color: var(--text); font-size: 0.8rem; flex-wrap: wrap; }
+  footer .credit { color: var(--muted); font-size: 0.72rem; margin-top: 6px; }
+  .brand { display: flex; align-items: center; gap: 14px; }
+  .brand .logo { width: 88px; height: 88px; border-radius: 16px; border: 1px solid var(--border); flex-shrink: 0; }
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">
+    <img class="logo" alt="" src="data:image/jpeg;base64,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">
+    <div>
+      <h1>ようつべパトロール</h1>
+      <p class="sub">YouTube登録チャンネルの新着動画を、前回確認した時点からの差分だけまとめて見る。データはすべてこの端末のブラウザ内(localStorage)に保存され、外部には送信されません。</p>
+    </div>
+  </div>
+</header>
+<main>
+
+  <details class="card" id="apiKeyCard">
+    <summary class="cardhead">APIキー <span class="status" id="apiKeyStatus">未設定</span></summary>
+    <div class="cardbody">
+      <div class="row">
+        <div class="grow">
+          <label for="apiKeyInput">APIキー</label>
+          <input type="password" id="apiKeyInput" placeholder="AIzaSy...">
+        </div>
+        <button class="secondary" id="toggleKeyBtn" type="button">表示</button>
+      </div>
+      <p class="hint">Google Cloud Console で YouTube Data API v3 を有効化して取得したAPIキーを入力してください。入力した値はこの端末のlocalStorageにのみ保存され、YouTube(Google)以外へは送信されません。</p>
+
+      <div style="margin-top:16px; padding-top:14px; border-top:1px solid var(--border);">
+        <p style="font-weight:600; margin:0 0 8px;">ブックマークレット</p>
+        <p class="hint" style="margin-bottom:6px;">YouTubeでチャンネルページや動画ページを見ているとき、下のリンクをブックマークバーへドラッグして登録しておくと、ワンクリックでそのページの候補を「追加しましたか」欄に持ってこられます(クリックではなく、ドラッグして登録してください)。</p>
+        <a href="#" id="bookmarkletLink" class="bookmarklet-link">🔖 ようつべパトロールへ追加</a>
+      </div>
+    </div>
+  </details>
+
+  <details class="card" id="organizeCard">
+    <summary class="cardhead">整理しましょう <span class="badge" id="chCountBadge">0件</span></summary>
+    <div class="cardbody">
+      <div class="dropzone" id="dropzone">
+        Google Takeout の subscriptions.csv をここにドラッグ&ドロップ、またはクリックして選択<br>
+        <span class="hint"><a href="https://takeout.google.com" target="_blank" rel="noopener" id="takeoutLink">takeout.google.com</a> &rarr; 「YouTubeとYouTube Music」&rarr; 「登録チャンネル」で書き出したCSV</span>
+        <input type="file" id="csvInput" accept=".csv" style="display:none">
+      </div>
+      <label style="display:flex; align-items:center; gap:6px; font-size:0.85rem; color:var(--text); margin:-2px 0 10px;">
+        <input type="checkbox" id="syncModeCheckbox" style="width:auto;">
+        今回はこのCSVに完全に同期する(今のリストにあってCSVに無いものは対象外にする)
+      </label>
+      <div id="setupMsg"></div>
+
+      <div id="chlistWrap">
+        <p class="empty-note" id="chlistEmpty">まだチャンネルが登録されていません。</p>
+        <div class="row" id="resetAllRow" style="display:none">
+          <button class="secondary tiny" id="resetAllBtn" type="button">全チャンネルの最終確認をリセット</button>
+        </div>
+        <table class="chlist" id="chlist" style="display:none">
+          <thead><tr><th>チャンネル</th><th>最終確認</th><th></th></tr></thead>
+          <tbody id="chlistBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </details>
+
+  <details class="card" id="newArrivalsCard" open>
+    <summary class="cardhead">新着の点検</summary>
+    <div class="cardbody">
+      <button id="patrolBtn" type="button">▶ 巡回する</button>
+      <p class="hint" id="patrolReadyHint"></p>
+      <div id="progressBox" style="display:none">
+        <div id="progressText"></div>
+        <div id="progressBar"><div id="progressBarFill"></div></div>
+      </div>
+      <div id="patrolMsg"></div>
+
+      <p class="hint" id="resultsTimestamp" style="display:none"></p>
+      <p id="resultsEmpty">「巡回する」を押すと、ここに新着動画がチャンネルごとに表示されます。</p>
+      <p class="hint">見なくなったチャンネルは、YouTube側でも登録解除するのをお忘れなく(ここの「対象外」はこのアプリの巡回対象から外すだけで、YouTube本体には影響しません)。</p>
+      <div class="row" id="resultsToggleRow" style="display:none">
+        <button class="secondary tiny" id="expandAllBtn" type="button">すべて開く</button>
+        <button class="secondary tiny" id="collapseAllBtn" type="button">すべて畳む</button>
+      </div>
+      <div id="resultsBody"></div>
+    </div>
+  </details>
+
+  <details class="card" id="addCard">
+    <summary class="cardhead">追加しましたか</summary>
+    <div class="cardbody">
+      <div class="msg ok candidate-box" id="candidateBox" style="display:none">
+        <div id="candidateInfo"></div>
+        <div class="row">
+          <button id="candidateAddBtn" type="button">巡回対象に追加</button>
+          <button class="secondary tiny" id="candidateDismissBtn" type="button">閉じる</button>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="grow">
+          <label for="manualAddInput">チャンネルを1件追加(URL / @ハンドル / チャンネルID / 動画URL)</label>
+          <input type="text" id="manualAddInput" placeholder="https://www.youtube.com/@example または UCxxxxxxxx">
+        </div>
+        <button class="secondary" id="manualAddBtn" type="button">追加</button>
+      </div>
+      <div id="addMsg"></div>
+    </div>
+  </details>
+
+</main>
+<footer>
+  <div class="colophon">
+    <span>2026年8月13日 発行</span>
+    <span>Sasaki Peopleware Works</span>
+  </div>
+  <div class="credit">初版は k1sasaki と Claude (Anthropic) が一緒に作りました。</div>
+</footer>
+
+<script>
+(function () {
+  "use strict";
+
+  var LS_KEY_API = "ytpatrol_apiKey";
+  var LS_KEY_CHANNELS = "ytpatrol_channels";
+  var LS_KEY_RESULTS = "ytpatrol_lastResults";
+  var THREE_MONTHS_MS = 1000 * 60 * 60 * 24 * 90;
+  var MAX_PAGES_PER_CHANNEL = 5;
+
+  var els = {
+    apiKeyCard: document.getElementById("apiKeyCard"),
+    apiKeyStatus: document.getElementById("apiKeyStatus"),
+    organizeCard: document.getElementById("organizeCard"),
+    apiKeyInput: document.getElementById("apiKeyInput"),
+    toggleKeyBtn: document.getElementById("toggleKeyBtn"),
+    dropzone: document.getElementById("dropzone"),
+    csvInput: document.getElementById("csvInput"),
+    syncModeCheckbox: document.getElementById("syncModeCheckbox"),
+    setupMsg: document.getElementById("setupMsg"),
+    chCountBadge: document.getElementById("chCountBadge"),
+    chlistEmpty: document.getElementById("chlistEmpty"),
+    resetAllRow: document.getElementById("resetAllRow"),
+    resetAllBtn: document.getElementById("resetAllBtn"),
+    chlist: document.getElementById("chlist"),
+    chlistBody: document.getElementById("chlistBody"),
+    newArrivalsCard: document.getElementById("newArrivalsCard"),
+    patrolBtn: document.getElementById("patrolBtn"),
+    patrolReadyHint: document.getElementById("patrolReadyHint"),
+    progressBox: document.getElementById("progressBox"),
+    progressText: document.getElementById("progressText"),
+    progressBarFill: document.getElementById("progressBarFill"),
+    patrolMsg: document.getElementById("patrolMsg"),
+    resultsEmpty: document.getElementById("resultsEmpty"),
+    resultsTimestamp: document.getElementById("resultsTimestamp"),
+    resultsToggleRow: document.getElementById("resultsToggleRow"),
+    expandAllBtn: document.getElementById("expandAllBtn"),
+    collapseAllBtn: document.getElementById("collapseAllBtn"),
+    resultsBody: document.getElementById("resultsBody"),
+    addCard: document.getElementById("addCard"),
+    candidateBox: document.getElementById("candidateBox"),
+    candidateInfo: document.getElementById("candidateInfo"),
+    candidateAddBtn: document.getElementById("candidateAddBtn"),
+    candidateDismissBtn: document.getElementById("candidateDismissBtn"),
+    manualAddInput: document.getElementById("manualAddInput"),
+    manualAddBtn: document.getElementById("manualAddBtn"),
+    addMsg: document.getElementById("addMsg"),
+    bookmarkletLink: document.getElementById("bookmarkletLink")
+  };
+
+  // ---------- state ----------
+
+  function loadChannels() {
+    try {
+      var raw = localStorage.getItem(LS_KEY_CHANNELS);
+      return raw ? JSON.parse(raw) : [];
+    } catch (e) { return []; }
+  }
+  function saveChannels(list) {
+    localStorage.setItem(LS_KEY_CHANNELS, JSON.stringify(list));
+  }
+  var channels = loadChannels();
+
+  function getApiKey() { return (localStorage.getItem(LS_KEY_API) || "").trim(); }
+  function setApiKey(v) { localStorage.setItem(LS_KEY_API, v.trim()); }
+
+  function saveLastResults(resultsByChannel) {
+    try {
+      localStorage.setItem(LS_KEY_RESULTS, JSON.stringify({
+        savedAt: new Date().toISOString(),
+        results: resultsByChannel
+      }));
+    } catch (e) { /* localStorage full or unavailable; skip persistence */ }
+  }
+  function loadLastResults() {
+    try {
+      var raw = localStorage.getItem(LS_KEY_RESULTS);
+      return raw ? JSON.parse(raw) : null;
+    } catch (e) { return null; }
+  }
+
+  // ---------- utils ----------
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+
+  function extractChannelId(text) {
+    var m = text.match(/UC[a-zA-Z0-9_-]{22}/);
+    return m ? m[0] : null;
+  }
+  function extractHandle(text) {
+    var m = text.match(/@([a-zA-Z0-9_.-]{2,})/);
+    return m ? m[1] : null;
+  }
+  function extractLegacyUsername(text) {
+    var m = text.match(/youtube\.com\/user\/([a-zA-Z0-9_-]+)/);
+    return m ? m[1] : null;
+  }
+  function extractVideoId(text) {
+    var m = text.match(/[?&]v=([a-zA-Z0-9_-]{11})/) ||
+      text.match(/youtu\.be\/([a-zA-Z0-9_-]{11})/) ||
+      text.match(/\/shorts\/([a-zA-Z0-9_-]{11})/);
+    return m ? m[1] : null;
+  }
+
+  function relativeTime(iso) {
+    if (!iso) return "未確認";
+    var diffMs = Date.now() - new Date(iso).getTime();
+    var mins = Math.floor(diffMs / 60000);
+    if (mins < 1) return "たった今";
+    if (mins < 60) return mins + "分前";
+    var hours = Math.floor(mins / 60);
+    if (hours < 24) return hours + "時間前";
+    var days = Math.floor(hours / 24);
+    if (days < 30) return days + "日前";
+    var months = Math.floor(days / 30);
+    return months + "ヶ月前";
+  }
+
+  function formatDate(iso) {
+    var d = new Date(iso);
+    return d.getFullYear() + "/" + String(d.getMonth() + 1).padStart(2, "0") + "/" + String(d.getDate()).padStart(2, "0") +
+      " " + String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0");
+  }
+
+  function showResultsTimestamp(iso) {
+    els.resultsTimestamp.textContent = "最終巡回: " + formatDate(iso) + "(" + relativeTime(iso) + ")";
+    els.resultsTimestamp.style.display = "";
+  }
+
+  function showMsg(el, text, kind) {
+    if (!text) { el.innerHTML = ""; return; }
+    el.innerHTML = '<div class="msg ' + kind + '">' + escapeHtml(text) + "</div>";
+  }
+
+  // ---------- rendering ----------
+
+  function renderChannelList() {
+    els.chCountBadge.textContent = channels.length + "件";
+    if (channels.length === 0) {
+      els.chlistEmpty.style.display = "";
+      els.chlist.style.display = "none";
+      els.resetAllRow.style.display = "none";
+      return;
+    }
+    els.chlistEmpty.style.display = "none";
+    els.chlist.style.display = "";
+    els.resetAllRow.style.display = "";
+    var sorted = channels.slice().sort(function (a, b) {
+      return (a.title || a.id).localeCompare(b.title || b.id, "ja");
+    });
+    els.chlistBody.innerHTML = sorted.map(function (ch) {
+      var lv = ch.latestVideo;
+      var thumbHtml = lv && lv.thumbnail
+        ? '<a href="https://www.youtube.com/watch?v=' + escapeHtml(lv.videoId) + '" target="_blank" rel="noopener">' +
+            '<img class="chlist-thumb" src="' + escapeHtml(lv.thumbnail) + '" alt=""></a>'
+        : '<div class="chlist-thumb"></div>';
+      var latestHtml = lv
+        ? '<div class="hint chlist-latest" style="margin-top:2px;">最新: <a href="https://www.youtube.com/watch?v=' + escapeHtml(lv.videoId) + '" target="_blank" rel="noopener">' + escapeHtml(lv.title) + '</a> (' + escapeHtml(relativeTime(lv.publishedAt)) + ')</div>'
+        : '<div class="hint">まだ巡回していません</div>';
+      return '<tr data-id="' + escapeHtml(ch.id) + '">' +
+        '<td><div class="chlist-row">' + thumbHtml +
+          '<div><a href="' + escapeHtml(ch.url) + '" target="_blank" rel="noopener">' + escapeHtml(ch.title || ch.id) + '</a>' + latestHtml + '</div>' +
+        '</div></td>' +
+        '<td>' + escapeHtml(relativeTime(ch.lastChecked)) + '</td>' +
+        '<td>' +
+          '<button class="rmbtn" data-reset="' + escapeHtml(ch.id) + '" type="button">未読に戻す</button>' +
+          '<button class="rmbtn" data-remove="' + escapeHtml(ch.id) + '" type="button">対象外</button>' +
+        '</td>' +
+        '</tr>';
+    }).join("");
+  }
+
+  function excludeChannel(id) {
+    channels = channels.filter(function (ch) { return ch.id !== id; });
+    saveChannels(channels);
+    renderChannelList();
+    updatePatrolReadiness();
+    if (currentResultsData) {
+      currentResultsData = currentResultsData.filter(function (r) { return r.channel.id !== id; });
+      renderResults(currentResultsData);
+      saveLastResults(currentResultsData);
+    }
+  }
+
+  els.resetAllBtn.addEventListener("click", function () {
+    if (!confirm(channels.length + "件全チャンネルの最終確認日時をリセットします。次の巡回で過去3ヶ月分をすべて再取得します。よろしいですか?")) return;
+    channels.forEach(function (ch) { ch.lastChecked = null; });
+    saveChannels(channels);
+    renderChannelList();
+    updatePatrolReadiness();
+  });
+
+  els.chlistBody.addEventListener("click", function (e) {
+    var resetBtn = e.target.closest("[data-reset]");
+    if (resetBtn) {
+      var rid = resetBtn.getAttribute("data-reset");
+      var target = channels.find(function (ch) { return ch.id === rid; });
+      if (target) target.lastChecked = null;
+      saveChannels(channels);
+      renderChannelList();
+      return;
+    }
+    var btn = e.target.closest("[data-remove]");
+    if (!btn) return;
+    excludeChannel(btn.getAttribute("data-remove"));
+  });
+
+  // ---------- API key ----------
+
+  function updateApiKeyStatus() {
+    var has = !!getApiKey();
+    els.apiKeyStatus.textContent = has ? "設定済み" : "未設定";
+    els.apiKeyStatus.className = "status" + (has ? " ok" : "");
+  }
+
+  els.apiKeyInput.value = getApiKey();
+  els.apiKeyInput.addEventListener("change", function () {
+    setApiKey(els.apiKeyInput.value);
+    updateApiKeyStatus();
+    updatePatrolReadiness();
+  });
+  els.toggleKeyBtn.addEventListener("click", function () {
+    var isPw = els.apiKeyInput.type === "password";
+    els.apiKeyInput.type = isPw ? "text" : "password";
+    els.toggleKeyBtn.textContent = isPw ? "隠す" : "表示";
+  });
+
+  // ---------- CSV import ----------
+
+  function parseCSV(text) {
+    var rows = [];
+    var row = [];
+    var field = "";
+    var inQuotes = false;
+    for (var i = 0; i < text.length; i++) {
+      var c = text[i];
+      if (inQuotes) {
+        if (c === '"') {
+          if (text[i + 1] === '"') { field += '"'; i++; }
+          else inQuotes = false;
+        } else field += c;
+      } else {
+        if (c === '"') inQuotes = true;
+        else if (c === ",") { row.push(field); field = ""; }
+        else if (c === "\n" || c === "\r") {
+          if (c === "\r" && text[i + 1] === "\n") i++;
+          row.push(field); field = "";
+          if (!(row.length === 1 && row[0] === "")) rows.push(row);
+          row = [];
+        } else field += c;
+      }
+    }
+    if (field.length > 0 || row.length > 0) { row.push(field); rows.push(row); }
+    return rows;
+  }
+
+  function importCSV(text) {
+    var rows = parseCSV(text);
+    if (rows.length === 0) {
+      showMsg(els.setupMsg, "CSVが空でした。", "error");
+      return;
+    }
+    var startIdx = 0;
+    var idCol = 0, titleCol = 2, urlCol = 1;
+    var header = rows[0].map(function (h) { return h.trim().toLowerCase(); });
+    if (header.indexOf("channel id") !== -1) {
+      idCol = header.indexOf("channel id");
+      titleCol = header.indexOf("channel title");
+      urlCol = header.indexOf("channel url");
+      startIdx = 1;
+    }
+    var csvEntries = {};
+    for (var i = startIdx; i < rows.length; i++) {
+      var r = rows[i];
+      if (!r || r.length === 0) continue;
+      var id = (r[idCol] || "").trim();
+      if (!/^UC[a-zA-Z0-9_-]{22}$/.test(id)) continue;
+      csvEntries[id] = {
+        title: (r[titleCol] || "").trim() || null,
+        url: (r[urlCol] || "").trim() || ("https://www.youtube.com/channel/" + id)
+      };
+    }
+    var csvIds = Object.keys(csvEntries);
+    if (csvIds.length === 0) {
+      showMsg(els.setupMsg, "有効なチャンネルIDがCSV内に見つかりませんでした。", "error");
+      return;
+    }
+
+    if (els.syncModeCheckbox.checked) {
+      var toRemove = channels.filter(function (ch) { return !csvEntries.hasOwnProperty(ch.id); });
+      if (toRemove.length > 0) {
+        var sample = toRemove.slice(0, 5).map(function (ch) { return ch.title || ch.id; }).join("、");
+        if (toRemove.length > 5) sample += " 他";
+        if (!confirm("今のリストのうち " + toRemove.length + "件が、今回のCSVに含まれていません。\n(" + sample + ")\n巡回対象から外します(YouTube側の登録はそのままです)。よろしいですか?")) {
+          return;
+        }
+      }
+      var kept = channels.filter(function (ch) { return csvEntries.hasOwnProperty(ch.id); });
+      var keptIds = {};
+      kept.forEach(function (ch) { keptIds[ch.id] = true; });
+      var addedCount = 0;
+      csvIds.forEach(function (id) {
+        if (keptIds[id]) return;
+        kept.push({ id: id, title: csvEntries[id].title, url: csvEntries[id].url, lastChecked: null });
+        addedCount++;
+      });
+      channels = kept;
+      saveChannels(channels);
+      renderChannelList();
+      updatePatrolReadiness();
+      els.syncModeCheckbox.checked = false;
+      showMsg(els.setupMsg, "同期しました(追加 " + addedCount + "件 / 対象外 " + toRemove.length + "件 / 維持 " + (channels.length - addedCount) + "件)。", "ok");
+    } else {
+      var existingIds = {};
+      channels.forEach(function (ch) { existingIds[ch.id] = true; });
+      var added = 0;
+      csvIds.forEach(function (id) {
+        if (existingIds[id]) return;
+        channels.push({ id: id, title: csvEntries[id].title, url: csvEntries[id].url, lastChecked: null });
+        existingIds[id] = true;
+        added++;
+      });
+      saveChannels(channels);
+      renderChannelList();
+      updatePatrolReadiness();
+      showMsg(els.setupMsg, added + "件のチャンネルを追加しました(重複・不正な行はスキップ)。", "ok");
+    }
+  }
+
+  els.dropzone.addEventListener("click", function () { els.csvInput.click(); });
+  document.getElementById("takeoutLink").addEventListener("click", function (e) { e.stopPropagation(); });
+  els.csvInput.addEventListener("change", function () {
+    var f = els.csvInput.files[0];
+    if (f) readCsvFile(f);
+  });
+  ["dragover", "dragenter"].forEach(function (evt) {
+    els.dropzone.addEventListener(evt, function (e) {
+      e.preventDefault();
+      els.dropzone.classList.add("drag");
+    });
+  });
+  ["dragleave", "drop"].forEach(function (evt) {
+    els.dropzone.addEventListener(evt, function (e) {
+      e.preventDefault();
+      els.dropzone.classList.remove("drag");
+    });
+  });
+  els.dropzone.addEventListener("drop", function (e) {
+    var f = e.dataTransfer.files[0];
+    if (f) readCsvFile(f);
+  });
+  function readCsvFile(f) {
+    var reader = new FileReader();
+    reader.onload = function () { importCSV(reader.result); };
+    reader.readAsText(f, "utf-8");
+  }
+
+  // ---------- チャンネル解決(手動追加・候補共通) ----------
+
+  function resolveChannelIdentity(raw, callback) {
+    var directId = extractChannelId(raw);
+    if (directId) { callback(null, { id: directId, title: null }); return; }
+
+    var apiKey = getApiKey();
+    if (!apiKey) {
+      callback(new Error("APIキーが未設定のため、このURL形式からは自動解決できません。先にAPIキーを設定するか、チャンネルID(UCで始まる)を含むURL/IDを入力してください。"));
+      return;
+    }
+
+    var videoId = extractVideoId(raw);
+    if (videoId) {
+      fetch("https://www.googleapis.com/youtube/v3/videos?part=snippet&id=" + encodeURIComponent(videoId) + "&key=" + encodeURIComponent(apiKey))
+        .then(function (r) { return r.json().then(function (data) { return { ok: r.ok, data: data }; }); })
+        .then(function (res) {
+          if (!res.ok || !res.data.items || res.data.items.length === 0) {
+            callback(new Error("動画からチャンネルを特定できませんでした: " + (res.data && res.data.error ? res.data.error.message : "見つかりません")));
+            return;
+          }
+          var sn = res.data.items[0].snippet;
+          callback(null, { id: sn.channelId, title: sn.channelTitle });
+        })
+        .catch(function (err) { callback(err); });
+      return;
+    }
+
+    var handle = extractHandle(raw);
+    var username = extractLegacyUsername(raw);
+    var params;
+    if (handle) params = "forHandle=" + encodeURIComponent(handle);
+    else if (username) params = "forUsername=" + encodeURIComponent(username);
+    else if (/\/results\?/.test(raw) || /[?&]search_query=/.test(raw)) {
+      callback(new Error("検索結果一覧のページのようです。まだチャンネル自体のページに移動していません。検索結果からチャンネル名やアイコンをクリックしてチャンネルのページを開いてから、もう一度お試しください。"));
+      return;
+    } else {
+      callback(new Error("チャンネルを特定できませんでした。チャンネルID(UCで始まる)、@ハンドル、/user/ のURL、/channel/ のURL、または動画URLを入力してください。"));
+      return;
+    }
+    fetch("https://www.googleapis.com/youtube/v3/channels?part=snippet&" + params + "&key=" + encodeURIComponent(apiKey))
+      .then(function (r) { return r.json().then(function (data) { return { ok: r.ok, data: data }; }); })
+      .then(function (res) {
+        if (!res.ok || !res.data.items || res.data.items.length === 0) {
+          callback(new Error("解決に失敗しました: " + (res.data && res.data.error ? res.data.error.message : "見つかりませんでした。")));
+          return;
+        }
+        var item = res.data.items[0];
+        callback(null, { id: item.id, title: item.snippet.title });
+      })
+      .catch(function (err) { callback(err); });
+  }
+
+  function addChannelById(id, title) {
+    if (channels.some(function (ch) { return ch.id === id; })) {
+      showMsg(els.addMsg, "そのチャンネルはすでに登録されています。", "error");
+      return;
+    }
+    channels.push({
+      id: id,
+      title: title || null,
+      url: "https://www.youtube.com/channel/" + id,
+      lastChecked: null
+    });
+    saveChannels(channels);
+    renderChannelList();
+    updatePatrolReadiness();
+    showMsg(els.addMsg, (title || id) + " を追加しました。", "ok");
+  }
+
+  // ---------- 手動追加 ----------
+
+  els.manualAddBtn.addEventListener("click", function () { manualAdd(); });
+  els.manualAddInput.addEventListener("keydown", function (e) {
+    if (e.key === "Enter") manualAdd();
+  });
+
+  function manualAdd() {
+    var raw = els.manualAddInput.value.trim();
+    if (!raw) return;
+    els.manualAddBtn.disabled = true;
+    resolveChannelIdentity(raw, function (err, result) {
+      els.manualAddBtn.disabled = false;
+      if (err) { showMsg(els.addMsg, err.message, "error"); return; }
+      els.manualAddInput.value = "";
+      addChannelById(result.id, result.title);
+    });
+  }
+
+  // ---------- 候補(ブックマークレット経由) ----------
+
+  var pendingCandidate = null;
+
+  function showCandidateLoading(rawUrl) {
+    els.candidateBox.className = "msg candidate-box";
+    els.candidateBox.style.display = "";
+    els.candidateInfo.textContent = "確認中... (" + rawUrl + ")";
+    els.candidateAddBtn.style.display = "none";
+  }
+  function showCandidateError(message) {
+    els.candidateBox.className = "msg error candidate-box";
+    els.candidateInfo.textContent = message;
+    els.candidateAddBtn.style.display = "none";
+    pendingCandidate = null;
+  }
+  function showCandidateFound(result) {
+    pendingCandidate = result;
+    els.candidateBox.className = "msg ok candidate-box";
+    els.candidateInfo.textContent = "候補: " + (result.title || result.id);
+    els.candidateAddBtn.style.display = "";
+  }
+
+  els.candidateAddBtn.addEventListener("click", function () {
+    if (!pendingCandidate) return;
+    addChannelById(pendingCandidate.id, pendingCandidate.title);
+    els.candidateBox.style.display = "none";
+    pendingCandidate = null;
+  });
+  els.candidateDismissBtn.addEventListener("click", function () {
+    els.candidateBox.style.display = "none";
+    pendingCandidate = null;
+  });
+
+  function initFromQueryParam() {
+    var params = new URLSearchParams(location.search);
+    var addParam = params.get("add");
+    if (!addParam) return;
+    els.addCard.open = true;
+    showCandidateLoading(addParam);
+    resolveChannelIdentity(addParam, function (err, result) {
+      if (err) { showCandidateError(err.message); return; }
+      showCandidateFound(result);
+    });
+    history.replaceState(null, "", location.pathname);
+  }
+
+  function setupBookmarklet() {
+    var target = location.origin + location.pathname;
+    var code = "(function(){window.open(" + JSON.stringify(target + "?add=") + "+encodeURIComponent(location.href),'_blank');})();";
+    els.bookmarkletLink.setAttribute("href", "javascript:" + code);
+    els.bookmarkletLink.addEventListener("click", function (e) {
+      e.preventDefault();
+      alert("このリンクはクリックではなく、ブックマークバーへドラッグして登録してください。");
+    });
+  }
+
+  // ---------- patrol ----------
+
+  function uploadsPlaylistId(channelId) {
+    return "UU" + channelId.slice(2);
+  }
+
+  function fetchNewVideosForChannel(ch, apiKey, cutoffDate) {
+    var playlistId = uploadsPlaylistId(ch.id);
+    var newVideos = [];
+    var latestVideo = null;
+    var page = 0;
+    var pageToken = null;
+
+    function nextPage() {
+      page++;
+      var url = "https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&maxResults=50&playlistId=" +
+        encodeURIComponent(playlistId) + "&key=" + encodeURIComponent(apiKey);
+      if (pageToken) url += "&pageToken=" + encodeURIComponent(pageToken);
+      return fetch(url).then(function (r) { return r.json().then(function (data) { return { ok: r.ok, status: r.status, data: data }; }); })
+        .then(function (res) {
+          if (!res.ok) {
+            var err = new Error(res.data && res.data.error ? res.data.error.message : ("HTTP " + res.status));
+            err.reason = res.data && res.data.error && res.data.error.errors && res.data.error.errors[0] ? res.data.error.errors[0].reason : null;
+            throw err;
+          }
+          var items = res.data.items || [];
+          var hitOld = false;
+          for (var i = 0; i < items.length; i++) {
+            var sn = items[i].snippet;
+            var publishedAt = sn.publishedAt;
+            if (page === 1 && i === 0) {
+              latestVideo = {
+                videoId: sn.resourceId.videoId,
+                title: sn.title,
+                publishedAt: publishedAt,
+                thumbnail: (sn.thumbnails && (sn.thumbnails.medium || sn.thumbnails.default)) ? (sn.thumbnails.medium || sn.thumbnails.default).url : ""
+              };
+            }
+            if (new Date(publishedAt).getTime() > cutoffDate.getTime()) {
+              newVideos.push({
+                videoId: sn.resourceId.videoId,
+                title: sn.title,
+                publishedAt: publishedAt,
+                thumbnail: (sn.thumbnails && (sn.thumbnails.medium || sn.thumbnails.default)) ? (sn.thumbnails.medium || sn.thumbnails.default).url : "",
+                channelTitle: sn.channelTitle || ch.title || ch.id
+              });
+            } else {
+              hitOld = true;
+            }
+          }
+          pageToken = res.data.nextPageToken || null;
+          if (hitOld || !pageToken || page >= MAX_PAGES_PER_CHANNEL) {
+            return { newVideos: newVideos, latestVideo: latestVideo };
+          }
+          return nextPage();
+        });
+    }
+
+    return nextPage();
+  }
+
+  var isPatrolling = false;
+  var displayedResultsHaveContent = false;
+  var currentResultsData = null;
+
+  function updatePatrolReadiness() {
+    if (isPatrolling) return;
+    var hasKey = !!getApiKey();
+    var hasChannels = channels.length > 0;
+    if (hasKey && hasChannels) {
+      els.patrolBtn.disabled = false;
+      els.patrolReadyHint.textContent = "";
+    } else {
+      els.patrolBtn.disabled = true;
+      var missing = [];
+      if (!hasKey) missing.push("「APIキー」の設定");
+      if (!hasChannels) missing.push("チャンネルの追加(「整理しましょう」でCSV取込み、または「追加しましたか」で手動追加)");
+      els.patrolReadyHint.textContent = "先に " + missing.join(" と ") + " が必要です。";
+    }
+  }
+
+  els.patrolBtn.addEventListener("click", function () {
+    if (isPatrolling) return;
+    if (channels.length === 0) {
+      showMsg(els.patrolMsg, "チャンネルが登録されていません。先にCSVを読み込むか、手動で追加してください。", "error");
+      return;
+    }
+    var apiKey = getApiKey();
+    if (!apiKey) {
+      showMsg(els.patrolMsg, "APIキーが入力されていません。", "error");
+      return;
+    }
+    if (displayedResultsHaveContent) {
+      if (!confirm("表示中の新着一覧は、今から始める巡回の結果で上書きされます(まだ見ていないものがあるかもしれません)。続けますか?")) {
+        return;
+      }
+    }
+    runPatrol(apiKey);
+  });
+
+  function runPatrol(apiKey) {
+    isPatrolling = true;
+    els.patrolBtn.disabled = true;
+    showMsg(els.patrolMsg, "", "");
+    els.progressBox.style.display = "";
+    els.resultsBody.innerHTML = "";
+    els.resultsEmpty.style.display = "none";
+
+    var total = channels.length;
+    var done = 0;
+    var totalNew = 0;
+    var resultsByChannel = [];
+    var stoppedByQuota = false;
+
+    function updateProgress() {
+      els.progressText.textContent = "巡回中... " + done + " / " + total + " チャンネル (新着 " + totalNew + "件)";
+      els.progressBarFill.style.width = Math.round((done / total) * 100) + "%";
+    }
+    updateProgress();
+
+    var idx = 0;
+    function step() {
+      if (idx >= channels.length || stoppedByQuota) {
+        finish();
+        return;
+      }
+      var ch = channels[idx];
+      idx++;
+      var cutoff = ch.lastChecked ? new Date(ch.lastChecked) : new Date(Date.now() - THREE_MONTHS_MS);
+      var now = new Date();
+      fetchNewVideosForChannel(ch, apiKey, cutoff)
+        .then(function (result) {
+          var videos = result.newVideos;
+          ch.lastChecked = now.toISOString();
+          if (result.latestVideo) ch.latestVideo = result.latestVideo;
+          if (videos.length > 0) {
+            if (videos[0].channelTitle && ch.title !== videos[0].channelTitle) {
+              ch.title = videos[0].channelTitle;
+            }
+            totalNew += videos.length;
+            resultsByChannel.push({ channel: ch, videos: videos });
+          }
+        })
+        .catch(function (err) {
+          if (err.reason === "quotaExceeded") {
+            stoppedByQuota = true;
+            showMsg(els.patrolMsg, "YouTube APIの利用上限(クォータ)に達しました。ここまでの結果を表示します。続きは明日以降お試しください。", "error");
+          } else {
+            resultsByChannel.push({ channel: ch, videos: [], error: err.message });
+          }
+        })
+        .then(function () {
+          done++;
+          updateProgress();
+          saveChannels(channels);
+          renderChannelList();
+          step();
+        });
+    }
+    step();
+
+    function finish() {
+      isPatrolling = false;
+      updatePatrolReadiness();
+      els.progressBox.style.display = "none";
+      renderResults(resultsByChannel);
+      saveLastResults(resultsByChannel);
+      showResultsTimestamp(new Date().toISOString());
+      if (!stoppedByQuota) {
+        showMsg(els.patrolMsg, "巡回完了: " + total + "チャンネル中、新着動画 " + totalNew + "件。", "ok");
+      }
+    }
+  }
+
+  function renderResults(resultsByChannel) {
+    currentResultsData = resultsByChannel;
+    if (resultsByChannel.length === 0) {
+      els.resultsEmpty.style.display = "";
+      els.resultsEmpty.textContent = "新着動画はありませんでした。";
+      els.resultsToggleRow.style.display = "none";
+      els.resultsBody.innerHTML = "";
+      displayedResultsHaveContent = false;
+      return;
+    }
+    els.resultsEmpty.style.display = "none";
+    els.resultsToggleRow.style.display = "";
+    var withNew = resultsByChannel.filter(function (r) { return r.videos.length > 0; })
+      .sort(function (a, b) { return b.videos.length - a.videos.length; });
+    var withErrors = resultsByChannel.filter(function (r) { return r.error; });
+    displayedResultsHaveContent = withNew.length > 0;
+
+    var html = withNew.map(function (r) {
+      var ch = r.channel;
+      var videosHtml = r.videos.map(function (v) {
+        return '<div class="video">' +
+          (v.thumbnail ? '<img src="' + escapeHtml(v.thumbnail) + '" alt="">' : "") +
+          '<div class="vt">' +
+            '<a href="https://www.youtube.com/watch?v=' + escapeHtml(v.videoId) + '" target="_blank" rel="noopener">' + escapeHtml(v.title) + '</a>' +
+            '<div class="vd">' + escapeHtml(formatDate(v.publishedAt)) + '</div>' +
+          '</div>' +
+        '</div>';
+      }).join("");
+      return '<details class="chgroup">' +
+        '<summary>' + escapeHtml(ch.title || ch.id) +
+          '<span class="cnt">' + r.videos.length + '件</span>' +
+          '<span class="chactions">' +
+            '<a href="' + escapeHtml(ch.url) + '" target="_blank" rel="noopener">チャンネルを開く</a>' +
+            '<button class="rmbtn" data-remove="' + escapeHtml(ch.id) + '" type="button">対象外</button>' +
+          '</span>' +
+        '</summary>' +
+        '<div class="videolist">' + videosHtml + '</div>' +
+      '</details>';
+    }).join("");
+
+    if (withErrors.length > 0) {
+      html += '<details class="chgroup"><summary>取得できなかったチャンネル<span class="cnt zero">' + withErrors.length + '件</span></summary>' +
+        '<div class="videolist">' + withErrors.map(function (r) {
+          return '<div class="video"><div class="vt">' + escapeHtml(r.channel.title || r.channel.id) +
+            '<div class="vd">' + escapeHtml(r.error) + '</div></div></div>';
+        }).join("") + '</div></details>';
+    }
+
+    els.resultsBody.innerHTML = html;
+  }
+
+  els.resultsBody.addEventListener("click", function (e) {
+    var btn = e.target.closest("[data-remove]");
+    if (!btn) return;
+    excludeChannel(btn.getAttribute("data-remove"));
+  });
+
+  els.expandAllBtn.addEventListener("click", function () {
+    els.resultsBody.querySelectorAll(".chgroup").forEach(function (d) { d.open = true; });
+  });
+  els.collapseAllBtn.addEventListener("click", function () {
+    els.resultsBody.querySelectorAll(".chgroup").forEach(function (d) { d.open = false; });
+  });
+
+  // ---------- init ----------
+
+  updateApiKeyStatus();
+  renderChannelList();
+  updatePatrolReadiness();
+  setupBookmarklet();
+  els.apiKeyCard.open = !getApiKey();
+  els.organizeCard.open = channels.length === 0;
+
+  var savedResults = loadLastResults();
+  if (savedResults && savedResults.results) {
+    renderResults(savedResults.results);
+    showResultsTimestamp(savedResults.savedAt);
+  }
+
+  initFromQueryParam();
+})();
+</script>
+</body>
+</html>
